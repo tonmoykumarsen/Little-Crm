@@ -46,8 +46,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/assets/{asset}/assign', [AssetController::class, 'assign'])->name('assets.assign');
         Route::post('/assets/{asset}/unassign', [AssetController::class, 'unassign'])->name('assets.unassign');
         
-        // Notice Management
+        // Notice Management (Admin full CRUD)
         Route::resource('notices', NoticeController::class);
+        Route::post('/notices/{notice}/toggle-status', [NoticeController::class, 'toggleStatus'])->name('notices.toggle-status');
         
         // Reports (Admin Only)
         Route::prefix('reports')->name('reports.')->group(function () {
@@ -58,6 +59,10 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/staff', [ReportController::class, 'staffReport'])->name('staff');
             Route::get('/tasks', [ReportController::class, 'taskReport'])->name('tasks');
         });
+        
+        // Leave Approval (Admin only)
+        Route::post('/leaves/{leave}/approve', [LeaveController::class, 'approve'])->name('leaves.approve');
+        Route::post('/leaves/{leave}/reject', [LeaveController::class, 'reject'])->name('leaves.reject');
     });
     
     // Staff Routes
@@ -73,23 +78,20 @@ Route::middleware(['auth'])->group(function () {
     
     // Common Routes (accessible by both admin and staff)
     
-    // Task Management (Both can view, edit, update - but only admin creates)
+    // Task Management (Both can view, edit, update, show - but only admin creates)
     Route::resource('tasks', TaskController::class)->except(['create', 'store', 'destroy']);
     
     // Time Logs View
     Route::get('/time-logs', [TimeLogController::class, 'index'])->name('time-logs.index');
     
-    // Leave Management
+    // Leave Management (Both can view and apply, but only staff can create)
     Route::resource('leaves', LeaveController::class)->except(['destroy']);
     
-    // Leave Approval (Admin only)
-    Route::post('/leaves/{leave}/approve', [LeaveController::class, 'approve'])->name('leaves.approve');
-    Route::post('/leaves/{leave}/reject', [LeaveController::class, 'reject'])->name('leaves.reject');
-    
-    // Notices (View only for staff, full CRUD for admin)
+    // Notices (View only for both, but admin has full CRUD through admin routes)
     Route::get('/notices', [NoticeController::class, 'index'])->name('notices.index');
+    Route::get('/notices/{notice}', [NoticeController::class, 'show'])->name('notices.show');
     
-    // Attendance (View only for staff, full CRUD for admin)
+    // Attendance (View only for both, but admin has full CRUD through admin routes)
     Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
     
     // Profile Management
@@ -97,3 +99,4 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/my-profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
 });
+

@@ -23,4 +23,38 @@ class Notice extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    // Scope for active notices
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    // Scope for current notices (within date range)
+    public function scopeCurrent($query)
+    {
+        return $query->where('start_date', '<=', now())
+                    ->where(function($q) {
+                        $q->where('end_date', '>=', now())
+                          ->orWhereNull('end_date');
+                    });
+    }
+
+    // Check if notice is currently active
+    public function getIsCurrentlyActiveAttribute()
+    {
+        if (!$this->is_active) {
+            return false;
+        }
+
+        if ($this->start_date > now()) {
+            return false;
+        }
+
+        if ($this->end_date && $this->end_date < now()) {
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -29,48 +29,65 @@
     @if(auth()->user()->role === 'admin')
         <!-- Admin View - All Notices -->
         @forelse($notices as $notice)
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 border-{{ $notice->priority === 'urgent' ? 'danger' : ($notice->priority === 'high' ? 'warning' : 'primary') }}">
-                <div class="card-header d-flex justify-content-between align-items-center bg-{{ $notice->priority === 'urgent' ? 'danger' : ($notice->priority === 'high' ? 'warning' : ($notice->priority === 'medium' ? 'info' : 'secondary') }} text-white">
-                    <h5 class="card-title mb-0">{{ Str::limit($notice->title, 50) }}</h5>
-                    <div>
-                        <span class="badge bg-light text-dark me-1">
-                            {{ ucfirst($notice->priority) }}
-                        </span>
-                        <span class="badge bg-{{ $notice->is_active ? 'success' : 'danger' }}">
-                            {{ $notice->is_active ? 'Active' : 'Inactive' }}
-                        </span>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">{{ Str::limit($notice->description, 150) }}</p>
-                    <div class="d-flex justify-content-between text-muted small">
+            @php
+                // Determine border color based on priority
+                $borderColor = 'primary';
+                $bgColor = 'secondary';
+                
+                if ($notice->priority === 'urgent') {
+                    $borderColor = 'danger';
+                    $bgColor = 'danger';
+                } elseif ($notice->priority === 'high') {
+                    $borderColor = 'warning';
+                    $bgColor = 'warning';
+                } elseif ($notice->priority === 'medium') {
+                    $borderColor = 'primary';
+                    $bgColor = 'info';
+                }
+            @endphp
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 border-{{ $borderColor }}">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-{{ $bgColor }} text-white">
+                        <h5 class="card-title mb-0">{{ Str::limit($notice->title, 50) }}</h5>
                         <div>
-                            <i class="fas fa-user me-1"></i>{{ $notice->creator->name }}
+                            <span class="badge bg-light text-dark me-1">
+                                {{ ucfirst($notice->priority) }}
+                            </span>
+                            <span class="badge bg-{{ $notice->is_active ? 'success' : 'danger' }}">
+                                {{ $notice->is_active ? 'Active' : 'Inactive' }}
+                            </span>
                         </div>
-                        <div>
-                            <i class="fas fa-calendar me-1"></i>{{ $notice->start_date->format('M d') }}
-                            @if($notice->end_date)
-                            - {{ $notice->end_date->format('M d') }}
-                            @endif
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ Str::limit($notice->description, 150) }}</p>
+                        <div class="d-flex justify-content-between text-muted small">
+                            <div>
+                                <i class="fas fa-user me-1"></i>{{ $notice->creator->name }}
+                            </div>
+                            <div>
+                                <i class="fas fa-calendar me-1"></i>{{ $notice->start_date->format('M d') }}
+                                @if($notice->end_date)
+                                - {{ $notice->end_date->format('M d') }}
+                                @endif
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-footer bg-transparent">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a href="{{ route('notices.show', $notice) }}" class="btn btn-sm btn-outline-primary">View Details</a>
-                        <div>
-                            <a href="{{ route('notices.edit', $notice) }}" class="btn btn-sm btn-outline-warning">Edit</a>
-                            <form action="{{ route('notices.destroy', $notice) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">Delete</button>
-                            </form>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ route('notices.show', $notice) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                            <div>
+                                <a href="{{ route('notices.edit', $notice) }}" class="btn btn-sm btn-outline-warning">Edit</a>
+                                <form action="{{ route('notices.destroy', $notice) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
         @empty
         <div class="col-12">
             <div class="text-center py-5">
@@ -84,32 +101,49 @@
     @else
         <!-- Staff View - Active Notices Only -->
         @forelse($notices as $notice)
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 shadow-sm border-{{ $notice->priority === 'urgent' ? 'danger' : ($notice->priority === 'high' ? 'warning' : 'primary') }}">
-                <div class="card-header d-flex justify-content-between align-items-center bg-{{ $notice->priority === 'urgent' ? 'danger' : ($notice->priority === 'high' ? 'warning' : ($notice->priority === 'medium' ? 'info' : 'secondary') }} text-white">
-                    <h5 class="card-title mb-0">{{ Str::limit($notice->title, 50) }}</h5>
-                    <span class="badge bg-light text-dark">
-                        {{ ucfirst($notice->priority) }} Priority
-                    </span>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">{{ Str::limit($notice->description, 200) }}</p>
-                    <div class="d-flex justify-content-between text-muted small mt-3">
-                        <div>
-                            <i class="fas fa-user me-1"></i>By: {{ $notice->creator->name }}
-                        </div>
-                        <div>
-                            <i class="fas fa-clock me-1"></i>{{ $notice->created_at->diffForHumans() }}
+            @php
+                // Determine border color based on priority
+                $borderColor = 'primary';
+                $bgColor = 'secondary';
+                
+                if ($notice->priority === 'urgent') {
+                    $borderColor = 'danger';
+                    $bgColor = 'danger';
+                } elseif ($notice->priority === 'high') {
+                    $borderColor = 'warning';
+                    $bgColor = 'warning';
+                } elseif ($notice->priority === 'medium') {
+                    $borderColor = 'primary';
+                    $bgColor = 'info';
+                }
+            @endphp
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm border-{{ $borderColor }}">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-{{ $bgColor }} text-white">
+                        <h5 class="card-title mb-0">{{ Str::limit($notice->title, 50) }}</h5>
+                        <span class="badge bg-light text-dark">
+                            {{ ucfirst($notice->priority) }} Priority
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ Str::limit($notice->description, 200) }}</p>
+                        <div class="d-flex justify-content-between text-muted small mt-3">
+                            <div>
+                                <i class="fas fa-user me-1"></i>By: {{ $notice->creator->name }}
+                            </div>
+                            <div>
+                                <i class="fas fa-clock me-1"></i>{{ $notice->created_at->diffForHumans() }}
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-footer bg-transparent">
-                    <a href="{{ route('notices.show', $notice) }}" class="btn btn-sm btn-primary w-100">
-                        Read Full Notice
-                    </a>
+                    <div class="card-footer bg-transparent">
+                        <a href="{{ route('notices.show', $notice) }}" class="btn btn-sm btn-primary w-100">
+                            Read Full Notice
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
         @empty
         <div class="col-12">
             <div class="text-center py-5">
